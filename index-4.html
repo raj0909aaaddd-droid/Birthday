@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>For Peachu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Caveat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+/* ============================= */
+/* TOKENS                        */
+/* ============================= */
+:root{
+  --black: #08070a;
+  --near-black: #0d0c10;
+  --ivory: #f4eee0;
+  --champagne: #d9c6a3;
+  --beige: #c3ad8c;
+  --gold: #b9925a;
+  --gold-soft: rgba(185,146,90,0.35);
+  --line: rgba(244,238,224,0.14);
+  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-hand: 'Caveat', 'Segoe Script', cursive;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-slow: 2.4s;
+  --dur-med: 1.4s;
+}
+
+*{ box-sizing: border-box; }
+html, body{
+  margin:0; padding:0;
+  background: var(--black);
+  color: var(--ivory);
+  font-family: var(--font-serif);
+  overflow-x: hidden;
+  width: 100%;
+}
+body{ position: relative; min-height: 100%; }
+
+::selection{ background: var(--gold-soft); color: var(--ivory); }
+
+h1,h2,h3,p{ margin:0; padding:0; font-weight: 400; }
+
+/* film grain + vignette, fixed over everything */
+.grain{
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+.vignette{
+  position: fixed; inset:0;
+  pointer-events:none;
+  z-index: 9998;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%);
+}
+
+/* ============================= */
+/* SHARED REVEAL UTILITIES       */
+/* ============================= */
+.reveal{
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
+  will-change: opacity, transform;
+}
+.reveal.visible{
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce){
+  .reveal{ transform: none; transition: opacity 1.2s ease; }
+}
+
+/* ============================= */
+/* OPENING SCENE                 */
+/* ============================= */
+#opening{
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--black);
+  transition: opacity 1.8s var(--ease), visibility 1.8s var(--ease);
+}
+#opening.closed{
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.opening-inner{
+  width: min(90vw, 620px);
+  text-align: center;
+  padding: 0 1.2rem;
+  position: relative;
+  min-height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.opening-line{
+  position: absolute;
+  left: 0; right: 0;
+  font-size: clamp(1.05rem, 3.4vw, 1.5rem);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--champagne);
+  opacity: 0;
+  transition: opacity 2.2s ease;
+  letter-spacing: 0.01em;
+}
+.opening-line.show{ opacity: 1; }
+
+.opening-title{
+  opacity: 0;
+  transition: opacity 2.4s ease 0.2s;
+}
+.opening-title.show{ opacity: 1; }
+.opening-title .for{
+  font-size: clamp(0.85rem, 2.2vw, 1rem);
+  letter-spacing: 0.22em;
+  color: var(--beige);
+  font-style: italic;
+  margin-bottom: 0.6rem;
+}
+.opening-title h1{
+  font-size: clamp(2.4rem, 9vw, 4.2rem);
+  font-weight: 500;
+  color: var(--ivory);
+  letter-spacing: 0.01em;
+}
+.opening-title .wish{
+  margin-top: 0.9rem;
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  color: var(--champagne);
+  font-style: italic;
+}
+.open-btn{
+  margin-top: 3rem;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: var(--font-hand);
+  font-size: clamp(1.2rem, 3.6vw, 1.5rem);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  padding: 0.6rem 1.2rem;
+  position: relative;
+  opacity: 0.85;
+  transition: opacity 0.5s ease, letter-spacing 0.5s ease;
+}
+.open-btn:hover, .open-btn:focus-visible{
+  opacity: 1;
+  letter-spacing: 0.05em;
+}
+.open-btn::after{
+  content:'';
+  position:absolute;
+  left: 50%; bottom: 0.1rem;
+  width: 0%; height: 1px;
+  background: var(--gold);
+  transition: width 0.5s ease, left 0.5s ease;
+}
+.open-btn:hover::after{ width: 70%; left: 15%; }
+
+/* ============================= */
+/* MAIN EXPERIENCE                */
+/* ============================= */
+#experience{
+  position: relative;
+  z-index: 1;
+}
+
+section{
+  position: relative;
+  width: 100%;
+  padding: min(18vh, 9rem) 1.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.section-inner{
+  width: min(92vw, 640px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2.2rem;
+}
+
+/* ============================= */
+/* LETTER SECTION                */
+/* ============================= */
+#letter{ background: var(--black); padding-top: 14vh; }
+.letter-paper{
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+.letter-paper p{
+  font-size: clamp(1.08rem, 2.6vw, 1.28rem);
+  line-height: 1.85;
+  color: var(--ivory);
+  font-weight: 300;
+  max-width: 62ch;
+}
+.letter-paper p.signature{
+  margin-top: 1rem;
+  font-style: italic;
+  color: var(--champagne);
+}
+.letter-paper .salutation{
+  font-size: clamp(1.3rem, 3.4vw, 1.7rem);
+  color: var(--gold);
+  font-style: italic;
+}
+
+/* ============================= */
+/* ALBUM SECTION                 */
+/* ============================= */
+#album{
+  background: radial-gradient(ellipse at 50% 20%, #121016 0%, var(--black) 65%);
+  padding-top: 10vh;
+  padding-bottom: 6vh;
+  overflow: hidden;
+}
+.album-title{
+  font-size: clamp(1.5rem, 4.6vw, 2.2rem);
+  color: var(--ivory);
+  font-weight: 400;
+  line-height: 1.4;
+}
+.album-subtitle{
+  font-family: var(--font-hand);
+  font-size: clamp(1.15rem, 3.4vw, 1.4rem);
+  color: var(--beige);
+  font-style: italic;
+  margin-top: -1rem;
+}
+
+.dust{
+  position: absolute; inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.dust span{
+  position: absolute;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  background: var(--champagne);
+  opacity: 0.35;
+  animation: drift 14s linear infinite;
+}
+@keyframes drift{
+  0%{ transform: translateY(0) translateX(0); opacity: 0; }
+  10%{ opacity: 0.4; }
+  90%{ opacity: 0.4; }
+  100%{ transform: translateY(-120px) translateX(20px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce){
+  .dust span{ animation: none; opacity: 0.15; }
+}
+
+.frame-stack{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: min(14vh, 8rem);
+  margin-top: 2rem;
+}
+
+.frame{
+  position: relative;
+  width: min(74vw, 340px);
+  aspect-ratio: 4 / 5;
+  background: #171419;
+  border-radius: 3px;
+  box-shadow:
+    0 2px 3px rgba(0,0,0,0.5),
+    0 25px 50px -12px rgba(0,0,0,0.65),
+    0 0 60px -10px rgba(185,146,90,0.08);
+  padding: 12px 12px 34px 12px;
+  opacity: 0;
+  transform: translateY(28px) rotate(var(--rot, 0deg));
+  transition: opacity 1.6s var(--ease), transform 1.6s var(--ease);
+}
+.frame.visible{
+  opacity: 1;
+  transform: translateY(0) rotate(var(--rot, 0deg));
+}
+.frame:nth-child(1){ --rot: -2.4deg; align-self: flex-start; margin-left: 4%; }
+.frame:nth-child(2){ --rot: 1.8deg; align-self: flex-end; margin-right: 6%; }
+.frame:nth-child(3){ --rot: -1.2deg; align-self: center; }
+.frame:nth-child(4){
+  --rot: 1.4deg;
+  align-self: center;
+  width: min(80vw, 380px);
+}
+
+.frame-photo{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 1px;
+  background: linear-gradient(135deg, #201c22, #14121a);
+}
+.frame-photo img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.02) brightness(0.96);
+  display: block;
+}
+.frame-photo::after{
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.35) 100%);
+  pointer-events: none;
+}
+.frame-photo.placeholder img{ display: none; }
+.frame-photo.placeholder{
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(185,146,90,0.12), transparent 60%),
+    linear-gradient(150deg, #1c1820 0%, #100e13 100%);
+}
+.frame-photo.placeholder::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><filter id='n'><feTurbulence baseFrequency='0.8' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/></svg>");
+  opacity: 0.06;
+}
+
+.frame-caption{
+  position: absolute;
+  bottom: 6px; left: 0; right: 0;
+  text-align: center;
+  font-family: var(--font-hand);
+  font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+  color: #2a2530;
+  opacity: 0.75;
+}
+
+.frame.expanded{
+  position: fixed;
+  z-index: 700;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1.15);
+  width: min(84vw, 420px);
+}
+
+.frame-backdrop{
+  position: fixed; inset: 0;
+  background: rgba(6,5,7,0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 650;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s var(--ease), visibility 0.6s var(--ease);
+}
+.frame-backdrop.show{ opacity: 1; visibility: visible; }
+
+/* ============================= */
+/* MEMORY TRANSITION              */
+/* ============================= */
+#transition{
+  background: var(--black);
+  min-height: 60vh;
+  justify-content: center;
+}
+.glow-dot{
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 40px 14px rgba(185,146,90,0.25);
+  margin-bottom: 2.2rem;
+}
+.transition-line{
+  font-size: clamp(1.15rem, 3.4vw, 1.55rem);
+  font-style: italic;
+  color: var(--champagne);
+  line-height: 1.7;
+}
+
+/* ============================= */
+/* QUIET SECTION                  */
+/* ============================= */
+#quiet{
+  background: var(--black);
+  min-height: 90vh;
+  gap: 0;
+}
+.quiet-intro{
+  font-size: clamp(1.2rem, 3.6vw, 1.6rem);
+  color: var(--ivory);
+  font-style: italic;
+  margin-bottom: min(14vh, 6rem);
+}
+.quiet-list{
+  display: flex;
+  flex-direction: column;
+  gap: min(9vh, 4.2rem);
+  width: 100%;
+}
+.quiet-list p{
+  font-size: clamp(1.05rem, 2.8vw, 1.35rem);
+  color: var(--champagne);
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+/* ============================= */
+/* FINALE                         */
+/* ============================= */
+#finale{
+  background: radial-gradient(ellipse at 50% 45%, #1a1512 0%, var(--black) 70%);
+  min-height: 85vh;
+  justify-content: center;
+}
+#finale h2{
+  font-size: clamp(2rem, 7vw, 3.2rem);
+  font-weight: 500;
+  color: var(--ivory);
+}
+#finale .sub{
+  margin-top: 1.2rem;
+  font-size: clamp(1.05rem, 3vw, 1.3rem);
+  font-style: italic;
+  color: var(--champagne);
+}
+
+/* ============================= */
+/* FINAL LETTER                   */
+/* ============================= */
+#final-letter{
+  background: var(--black);
+  min-height: 70vh;
+  justify-content: center;
+}
+.final-note p{
+  font-size: clamp(1.1rem, 2.8vw, 1.35rem);
+  font-style: italic;
+  line-height: 1.85;
+  color: var(--ivory);
+  font-weight: 300;
+}
+.final-happy{
+  margin-top: 2.4rem;
+  font-size: clamp(1.8rem, 5.6vw, 2.6rem);
+  color: var(--gold);
+  font-weight: 500;
+}
+.final-small{
+  margin-top: 1.6rem;
+  font-family: var(--font-hand);
+  font-size: clamp(1.05rem, 2.8vw, 1.25rem);
+  color: var(--beige);
+}
+
+#end-space{
+  height: 22vh;
+  background: var(--black);
+}
+
+/* ============================= */
+/* MUSIC CONTROL                  */
+/* ============================= */
+#music-toggle{
+  position: fixed;
+  bottom: 1.4rem;
+  right: 1.4rem;
+  z-index: 800;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(10,9,12,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.4s ease, transform 0.3s ease;
+  opacity: 0;
+  animation: fadeInControl 1s ease 0.6s forwards;
+}
+@keyframes fadeInControl{ to{ opacity: 1; } }
+#music-toggle:hover{ border-color: var(--gold-soft); }
+#music-toggle:active{ transform: scale(0.94); }
+#music-toggle svg{ width: 18px; height: 18px; }
+#music-toggle .bar{
+  fill: none;
+  stroke: var(--champagne);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  transition: opacity 0.3s ease;
+}
+#music-toggle.playing .bar{
+  animation: sway 1.6s ease-in-out infinite;
+}
+#music-toggle.playing .bar:nth-child(2){ animation-delay: 0.15s; }
+#music-toggle.playing .bar:nth-child(3){ animation-delay: 0.3s; }
+@keyframes sway{
+  0%, 100%{ transform: scaleY(0.6); }
+  50%{ transform: scaleY(1.15); }
+}
+@media (prefers-reduced-motion: reduce){
+  #music-toggle.playing .bar{ animation: none; }
+}
+#music-toggle[hidden]{ display: none; }
+
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="vignette"></div>
+
+<!-- OPENING SCENE -->
+<div id="opening">
+  <div class="opening-inner">
+    <p class="opening-line" data-line="1">Some people become memories.</p>
+    <p class="opening-line" data-line="2">Some people become a part of them.</p>
+    <p class="opening-line" data-line="3">And then there are people who simply make life a little more beautiful by being in it.</p>
+    <div class="opening-title">
+      <div class="for">For</div>
+      <h1>Peachu</h1>
+      <div class="wish">Happy Birthday.</div>
+      <button class="open-btn" id="open-btn" aria-label="Open the experience">open this when you're ready</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN EXPERIENCE -->
+<main id="experience">
+
+  <!-- LETTER -->
+  <section id="letter">
+    <div class="section-inner">
+      <div class="letter-paper">
+        <p class="reveal salutation">Peachu,</p>
+        <p class="reveal">I don't know if words can ever properly explain how grateful I am that you exist.</p>
+        <p class="reveal">But today isn't really about finding perfect words.</p>
+        <p class="reveal">It's about taking a moment to tell you something simple.</p>
+        <p class="reveal">You matter.</p>
+        <p class="reveal">More than you probably realize.</p>
+        <p class="reveal">There are people who pass through our lives and leave behind memories.</p>
+        <p class="reveal">And then there are people who somehow leave a little warmth behind wherever they go.</p>
+        <p class="reveal">You're one of those people.</p>
+        <p class="reveal">I hope this birthday reminds you that your existence has meaning.</p>
+        <p class="reveal">That your smile has been someone's reason to smile too.</p>
+        <p class="reveal">That even on the days when you don't feel particularly special, there is still something quietly wonderful about you.</p>
+        <p class="reveal">So today, I hope life is gentle with you.</p>
+        <p class="reveal">I hope you laugh until your stomach hurts.</p>
+        <p class="reveal">I hope you receive the kind of happiness you don't have to question.</p>
+        <p class="reveal">And I hope somewhere between all the wishes, candles, messages and noise...</p>
+        <p class="reveal">you remember that someone was genuinely happy that you were born.</p>
+        <p class="reveal signature">Happy birthday, Peachu.<br>Please keep being you.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALBUM -->
+  <section id="album">
+    <div class="dust" id="dust-field"></div>
+    <div class="section-inner reveal">
+      <h2 class="album-title">Four little pieces of a beautiful memory.</h2>
+      <p class="album-subtitle">Some pictures are more than pictures. They become places we can return to.</p>
+    </div>
+    <div class="frame-stack">
+      <figure class="frame" data-index="1">
+        <div class="frame-photo"><img src="assets/peachu-1.jpg" alt="A memory of Peachu" loading="lazy"></div>
+        <figcaption class="frame-caption">A moment worth keeping.</figcaption>
+      </figure>
+      <figure class="frame" data-index="2">
+        <div class="frame-photo"><img src="assets/peachu-2.jpg" alt="A memory of Peachu" loading="lazy"></div>
+        <figcaption class="frame-caption">Some memories feel warmer than others.</figcaption>
+      </figure>
+      <figure class="frame" data-index="3">
+        <div class="frame-photo"><img src="assets/peachu-3.jpg" alt="A memory of Peachu" loading="lazy"></div>
+        <figcaption class="frame-caption">I hope this one always makes you smile.</figcaption>
+      </figure>
+      <figure class="frame" data-index="4">
+        <div class="frame-photo"><img src="assets/peachu-4.jpg" alt="A memory of Peachu" loading="lazy"></div>
+        <figcaption class="frame-caption">And somehow, this little moment became something worth remembering.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- MEMORY TRANSITION -->
+  <section id="transition">
+    <div class="section-inner">
+      <div class="glow-dot reveal"></div>
+      <p class="transition-line reveal" data-delay="0">Maybe that's what memories are...</p>
+      <p class="transition-line reveal" data-delay="900">Little pieces of time we somehow get to keep.</p>
+    </div>
+  </section>
+
+  <!-- QUIET SECTION -->
+  <section id="quiet">
+    <div class="section-inner">
+      <p class="quiet-intro reveal">Before you make another wish…</p>
+      <div class="quiet-list">
+        <p class="reveal">Look at how far you've already come.</p>
+        <p class="reveal">I hope you find peace.</p>
+        <p class="reveal">I hope you never lose your softness.</p>
+        <p class="reveal">I hope you meet people who appreciate your heart.</p>
+        <p class="reveal">I hope you laugh more than you worry.</p>
+        <p class="reveal">I hope your dreams become ordinary parts of your life someday.</p>
+        <p class="reveal">And I hope this next year gives you more reasons to stay excited about tomorrow.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINALE -->
+  <section id="finale">
+    <div class="dust" id="dust-field-2"></div>
+    <div class="section-inner">
+      <h2 class="reveal">Happy Birthday, Peachu.</h2>
+      <p class="sub reveal">May this year be kinder to you than the last.</p>
+    </div>
+  </section>
+
+  <!-- FINAL LETTER -->
+  <section id="final-letter">
+    <div class="section-inner final-note">
+      <p class="reveal">If you ever forget how special you are,</p>
+      <p class="reveal">come back here.</p>
+      <p class="reveal">Not because this page knows everything about you...</p>
+      <p class="reveal">but because someone once cared enough to make this little place for you.</p>
+      <p class="final-happy reveal">Happy Birthday, Peachu.</p>
+      <p class="final-small reveal">Keep smiling. The world is better with it.</p>
+    </div>
+  </section>
+
+  <div id="end-space"></div>
+</main>
+
+<!-- MUSIC CONTROL -->
+<button id="music-toggle" aria-label="Play music" aria-pressed="false" hidden>
+  <svg viewBox="0 0 24 24">
+    <path class="bar" d="M6 15v-6"/>
+    <path class="bar" d="M12 18v-12"/>
+    <path class="bar" d="M18 15v-6"/>
+  </svg>
+</button>
+<audio id="bgm" loop preload="none">
+  <source src="assets/peachu-song.mp3" type="audio/mpeg">
+</audio>
+
+<div class="frame-backdrop" id="frame-backdrop"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- OPENING SEQUENCE ---------- */
+  var openingLines = document.querySelectorAll('.opening-line');
+  var openingTitle = document.querySelector('.opening-title');
+  var openingEl = document.getElementById('opening');
+  var openBtn = document.getElementById('open-btn');
+
+  function runOpeningSequence(){
+    var holdTime = reduceMotion ? 1400 : 2400;
+    var gapTime = reduceMotion ? 300 : 700;
+    var t = 300;
+
+    openingLines.forEach(function(line, i){
+      setTimeout(function(){ line.classList.add('show'); }, t);
+      t += holdTime;
+      setTimeout(function(){ line.classList.remove('show'); }, t);
+      t += gapTime;
+    });
+
+    setTimeout(function(){
+      if(openingTitle) openingTitle.classList.add('show');
+    }, t + 200);
+  }
+
+  runOpeningSequence();
+
+  function closeOpening(){
+    openingEl.classList.add('closed');
+    document.body.style.overflow = '';
+    startMusicReveal();
+  }
+
+  if(openBtn){
+    openBtn.addEventListener('click', closeOpening);
+  }
+
+  document.body.style.overflow = 'hidden';
+  var experience = document.getElementById('experience');
+  if(experience) experience.style.pointerEvents = 'none';
+
+  var origClose = closeOpening;
+  closeOpening = function(){
+    origClose();
+    if(experience) experience.style.pointerEvents = '';
+  };
+  if(openBtn){
+    openBtn.removeEventListener('click', origClose);
+    openBtn.addEventListener('click', closeOpening);
+  }
+
+  /* ---------- SCROLL REVEAL ---------- */
+  var revealTargets = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var el = entry.target;
+          var delay = el.getAttribute('data-delay');
+          if(delay){
+            setTimeout(function(){ el.classList.add('visible'); }, parseInt(delay, 10));
+          } else {
+            el.classList.add('visible');
+          }
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.35, rootMargin: '0px 0px -8% 0px' });
+
+    revealTargets.forEach(function(el){ io.observe(el); });
+  } else {
+    revealTargets.forEach(function(el){ el.classList.add('visible'); });
+  }
+
+  /* ---------- PHOTO FRAMES ---------- */
+  var frames = document.querySelectorAll('.frame');
+  var backdrop = document.getElementById('frame-backdrop');
+
+  frames.forEach(function(frame){
+    var img = frame.querySelector('img');
+    var photoWrap = frame.querySelector('.frame-photo');
+
+    img.addEventListener('error', function(){
+      photoWrap.classList.add('placeholder');
+    });
+
+    frame.addEventListener('click', function(){
+      var isExpanded = frame.classList.contains('expanded');
+      frames.forEach(function(f){ f.classList.remove('expanded'); });
+      if(!isExpanded){
+        frame.classList.add('expanded');
+        if(backdrop) backdrop.classList.add('show');
+      } else {
+        if(backdrop) backdrop.classList.remove('show');
+      }
+    });
+  });
+
+  if(backdrop){
+    backdrop.addEventListener('click', function(){
+      frames.forEach(function(f){ f.classList.remove('expanded'); });
+      backdrop.classList.remove('show');
+    });
+  }
+
+  /* ---------- DUST PARTICLES ---------- */
+  function seedDust(container, count){
+    if(!container || reduceMotion) return;
+    for(var i = 0; i < count; i++){
+      var s = document.createElement('span');
+      s.style.left = (Math.random() * 100) + '%';
+      s.style.top = (60 + Math.random() * 35) + '%';
+      s.style.animationDuration = (10 + Math.random() * 10) + 's';
+      s.style.animationDelay = (Math.random() * 10) + 's';
+      container.appendChild(s);
+    }
+  }
+  seedDust(document.getElementById('dust-field'), 18);
+  seedDust(document.getElementById('dust-field-2'), 14);
+
+  /* ---------- MUSIC ---------- */
+  var bgm = document.getElementById('bgm');
+  var musicBtn = document.getElementById('music-toggle');
+  var musicReady = false;
+  var musicPlaying = false;
+  var fadeInterval = null;
+
+  if(bgm){
+    bgm.volume = 0;
+
+    bgm.addEventListener('error', function(){
+      musicReady = false;
+      if(musicBtn) musicBtn.hidden = true;
+    }, true);
+
+    bgm.addEventListener('canplay', function(){
+      musicReady = true;
+    });
+
+    var probe = bgm.querySelector('source');
+    if(probe){
+      probe.addEventListener('error', function(){
+        musicReady = false;
+        if(musicBtn) musicBtn.hidden = true;
+      });
+    }
+  }
+
+  function fadeVolumeTo(target, duration){
+    if(!bgm) return;
+    clearInterval(fadeInterval);
+    var steps = 30;
+    var stepTime = duration / steps;
+    var start = bgm.volume;
+    var diff = target - start;
+    var i = 0;
+    fadeInterval = setInterval(function(){
+      i++;
+      bgm.volume = Math.max(0, Math.min(1, start + (diff * (i / steps))));
+      if(i >= steps) clearInterval(fadeInterval);
+    }, stepTime);
+  }
+
+  function toggleMusic(){
+    if(!bgm || !musicBtn) return;
+    if(!musicPlaying){
+      try{
+        var p = bgm.play();
+        if(p && typeof p.catch === 'function'){
+          p.then(function(){
+            musicPlaying = true;
+            musicBtn.classList.add('playing');
+            musicBtn.setAttribute('aria-pressed', 'true');
+            musicBtn.setAttribute('aria-label', 'Pause music');
+            fadeVolumeTo(0.5, 2500);
+          }).catch(function(){
+            musicPlaying = false;
+          });
+        } else {
+          musicPlaying = true;
+          musicBtn.classList.add('playing');
+          fadeVolumeTo(0.5, 2500);
+        }
+      } catch(e){
+        musicPlaying = false;
+      }
+    } else {
+      fadeVolumeTo(0, 900);
+      setTimeout(function(){
+        try{ bgm.pause(); } catch(e){}
+      }, 950);
+      musicPlaying = false;
+      musicBtn.classList.remove('playing');
+      musicBtn.setAttribute('aria-pressed', 'false');
+      musicBtn.setAttribute('aria-label', 'Play music');
+    }
+  }
+
+  if(musicBtn){
+    musicBtn.addEventListener('click', toggleMusic);
+  }
+
+  function startMusicReveal(){
+    if(musicBtn) musicBtn.hidden = false;
+  }
+
+  /* ---------- SAFETY: no elements crash if missing ---------- */
+  window.addEventListener('error', function(){ /* silently absorb asset errors */ }, true);
+
+})();
+</script>
+
+</body>
+</html>
